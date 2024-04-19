@@ -16,6 +16,7 @@ from langchain.docstore.document import Document
 from openai import OpenAI
 from dotenv import load_dotenv
 import os, random, json
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -63,6 +64,7 @@ def search(message, history):
     
     mediator_num = json.loads(number_str)['mediator']
 
+    print(mediator_num)
     template = """"""
     prompt = "You are a professional mediator information analyzer. You have to write why the following context is related to human's message. Please write 3 or 4 sentences."
     
@@ -104,8 +106,7 @@ def search(message, history):
         if result['score'] > 0.75:
             data = {}
             for metadata in metadata_list:                
-                data[metadata] = result['metadata'][metadata]
-
+                data[metadata] = BeautifulSoup(result['metadata'][metadata], "html.parser").get_text()
             new_data.append(data)
     
     print(len(new_data))
@@ -114,7 +115,7 @@ def search(message, history):
     answer = ""
     for index, new_datum in enumerate(new_data):
         if index < mediator_num:
-            answer = f"{index+1}\n"
+            answer += f"{index+1}\n"
             content = ""
             for metadata_index, metadata in enumerate(metadata_list):
                 content += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
