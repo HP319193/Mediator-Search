@@ -93,7 +93,7 @@ def search(message, history):
 
     results = index.query(
         vector=embeddings.embed_query(message),
-        top_k=50,
+        top_k=800,
         include_metadata=True
     )
     end_time = time.time()
@@ -130,7 +130,7 @@ def search(message, history):
     chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
             openai_api_key=openai_api_key)
 
-    print(new_docs)
+    # print(new_docs)
     chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
     start_time = time.time()
     output = chain({"input_documents": new_docs, "human_input": message}, return_only_outputs=False)
