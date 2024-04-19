@@ -91,7 +91,7 @@ def search(message, history):
 
     results = index.query(
         vector=embeddings.embed_query(message),
-        top_k=1,
+        top_k=50,
         include_metadata=True
     )
     end_time = time.time()
@@ -108,6 +108,7 @@ def search(message, history):
 
             new_data.append(data)
     
+    print(len(new_data))
     random.shuffle(new_data)
 
     answer = ""
