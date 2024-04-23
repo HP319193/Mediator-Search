@@ -12,6 +12,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain.docstore.document import Document
+from langchain.chains.summarize import load_summarize_chain
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -24,12 +25,54 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_index = os.getenv("INDEX")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography']
-metadata_value = ['Name', "Email", "Profile", "Biography"]
+metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state', 'mediator areas of practice']
+metadata_value = ['Name', "Email", "Profile", "Biography", "State", "Practice"]
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 openai_client = OpenAI(api_key=openai_api_key)
+
+def getMetadata(message):
+    tools = [
+        {
+            "type": "function", 
+            "function": {
+                "name": "get_info",
+                "description": "Extract the information of mediator",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "country": {
+                            "type": "string",
+                            "description": "Extract mediator's country that user want to search."
+                            },
+                        "city": {
+                            "type": "string",
+                            "description": "Extract mediator's city that user want to search."
+                            },
+                        "state": {
+                            "type": "string",
+                            "description": "Extract mediator's state that user want to search."
+                            }
+                        }
+                    },
+                }
+            }
+    ]
+
+    response = openai_client.chat.completions.create(
+        model="gpt-4-1106-preview",
+        messages=[
+                {"role": "system", "content": f"You are a helpful astronomic assistant. Your role is to extract information about mediator from user's message."},
+                {"role": "user", "content": message}
+            ],
+        tools=tools
+    )
+
+    return response.choices[0].message.tool_calls[0].function.arguments
+
 def search(message, history):
+    metadata = json.loads(getMetadata(message=message))
+    print(metadata)
     tools = [
             {
                 "type": "function", 
@@ -93,9 +136,10 @@ def search(message, history):
 
     results = index.query(
         vector=embeddings.embed_query(message),
-        top_k=800,
+        top_k=748,
         include_metadata=True
     )
+
     end_time = time.time()
 
     print("Search Time =>", end_time-start_time)
@@ -103,12 +147,14 @@ def search(message, history):
     new_docs = []
     new_data = []
     for result in results['matches']:
-        if result['score'] > 0.75:
+        if result['score'] > 0.85:
+            print(result['score'])
             data = {}
-            for metadata in metadata_list:                
-                data[metadata] = BeautifulSoup(result['metadata'][metadata], "html.parser").get_text()
+            for metadata in metadata_list:      
+                data[metadata] = result['metadata'][metadata]
             new_data.append(data)
-    
+        else:
+            print(result['score'])
     print(len(new_data))
     random.shuffle(new_data)
 
@@ -139,6 +185,7 @@ def search(message, history):
     print("Query Time =>", end_time-start_time)
     
     answer += f"Why appropriate: {output['output_text']}"
+    
     return answer
 
 chatbot = gr.Chatbot(avatar_images=["user.png", "bot.jpg"], height=600)

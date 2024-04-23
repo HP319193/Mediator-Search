@@ -5,6 +5,9 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.document_loaders.base import BaseLoader
 from langchain.docstore.document import Document
 from langchain_pinecone import PineconeVectorStore
+from langchain.chains.summarize import load_summarize_chain
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_openai import ChatOpenAI
 
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
@@ -18,6 +21,14 @@ pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
+content_list = ["mediator country", "mediator city", "mediator state", "mediator zip code", "mediator areas of practice"]
+
+def summarize(text):
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4-1106-preview", api_key=openai_api_key)
+    chain = load_summarize_chain(llm, chain_type="stuff")
+
+    return chain.run([Document(page_content=text)])
+    
 class MetaDataCSVLoader(BaseLoader):
     def __init__(
         self,
@@ -92,7 +103,14 @@ if csv_file_uploaded is not None:
                 metadata_columns=filtered_headers, encoding = "utf-8")
             data = loader.load()
 
-            # Pinecone.from_documents(data, embeddings, index_name=index_name)
+            for datum in data:
+                new_content = ""
+                for content in content_list:
+                    new_content += f"{content}: {datum.metadata[content]}\n"
+                
+                datum.page_content = new_content
+                datum.metadata['mediator Biography'] = summarize(datum.metadata['mediator Biography'])
+
             PineconeVectorStore.from_documents(data, embeddings, index_name=pinecone_index)
 
     save_file_to_folder(csv_file_uploaded)
