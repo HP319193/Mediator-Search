@@ -41,15 +41,15 @@ def getMetadata(message):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "country": {
+                        "mediator country": {
                             "type": "string",
                             "description": "Extract mediator's country that user want to search."
                             },
-                        "city": {
+                        "mediator city": {
                             "type": "string",
                             "description": "Extract mediator's city that user want to search."
                             },
-                        "state": {
+                        "mediator state": {
                             "type": "string",
                             "description": "Extract mediator's state that user want to search."
                             }
@@ -137,6 +137,7 @@ def search(message, history):
     results = index.query(
         vector=embeddings.embed_query(message),
         top_k=748,
+        filter=metadata,
         include_metadata=True
     )
 
@@ -147,7 +148,7 @@ def search(message, history):
     new_docs = []
     new_data = []
     for result in results['matches']:
-        if result['score'] > 0.85:
+        if result['score'] > 0.8:
             print(result['score'])
             data = {}
             for metadata in metadata_list:      
