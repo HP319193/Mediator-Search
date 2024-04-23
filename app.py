@@ -147,7 +147,7 @@ def search(message, history):
     new_docs = []
     new_data = []
     for result in results['matches']:
-        if result['score'] > 0.85:
+        if result['score'] > 0.8:
             print(result['score'])
             data = {}
             for metadata in metadata_list:      
