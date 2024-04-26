@@ -8,6 +8,9 @@ from langchain_pinecone import PineconeVectorStore
 from langchain.chains.summarize import load_summarize_chain
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_openai import ChatOpenAI
+from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+from langchain.chains.llm import LLMChain
+from langchain_core.prompts import PromptTemplate
 
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
@@ -24,10 +27,20 @@ embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 content_list = ["mediator country", "mediator city", "mediator state", "mediator zip code", "mediator areas of practice"]
 
 def summarize(text):
+    prompt_template = """Write a concise summary of the following context. Summary should be up to 350 characters.
+    Context: "{text}"
+    CONCISE SUMMARY:"""
+
+    prompt = PromptTemplate.from_template(prompt_template)
+
     llm = ChatOpenAI(temperature=0, model_name="gpt-4-1106-preview", api_key=openai_api_key)
     chain = load_summarize_chain(llm, chain_type="stuff")
 
-    return chain.run([Document(page_content=text)])
+    llm_chain = LLMChain(llm=llm, prompt=prompt)
+
+    # Define StuffDocumentsChain
+    stuff_chain = StuffDocumentsChain(llm_chain=llm_chain, document_variable_name="text")
+    return stuff_chain.run([Document(page_content=text)])
     
 class MetaDataCSVLoader(BaseLoader):
     def __init__(

@@ -25,8 +25,8 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_index = os.getenv("INDEX")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state', 'mediator areas of practice']
-metadata_value = ['Name', "Email", "Profile", "Biography", "State", "Practice"]
+metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state']
+metadata_value = ['Name', "Email", "Profile", "Biography", "State"]
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 openai_client = OpenAI(api_key=openai_api_key)
