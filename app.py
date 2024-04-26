@@ -84,7 +84,7 @@ def search(message, history):
                         "properties": {
                             "mediator": {
                                 "type": "number",
-                                "description": "The number of mediators that user want to search",
+                                "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators.",
                                 "default": 1
                             }
                         },
@@ -109,7 +109,7 @@ def search(message, history):
 
     print(mediator_num)
     template = """"""
-    prompt = "You are a professional mediator information analyzer. You have to write why the following context is related to human's message. Please write 3 or 4 sentences."
+    prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are appropriated to human's message. You shouldn't write mediator's information again. You have to analyze the mediators at once. You have to only write the reason within 2 sentences. "
     
     end = """Context: {context}
         Chat history: {chat_history}
