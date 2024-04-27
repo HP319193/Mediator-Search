@@ -19,18 +19,25 @@ from dotenv import load_dotenv
 import os, random, json
 from bs4 import BeautifulSoup
 
+from extract import extract_list
+
 load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_index = os.getenv("INDEX")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state']
-metadata_value = ['Name', "Email", "Profile", "Biography", "State"]
+metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state', 'mediator areas of practice']
+metadata_value = ['Name', "Email", "Profile", "Biography", "State", "practice"]
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 openai_client = OpenAI(api_key=openai_api_key)
 
+practice_list = ', '.join(extract_list())
+
+description = "Extract mediator's practice field that user want to search. Available mediator practice fields are " + practice_list
+
+print(description)
 def getMetadata(message):
     tools = [
         {
@@ -52,7 +59,12 @@ def getMetadata(message):
                         "mediator state": {
                             "type": "string",
                             "description": "Extract mediator's state that user want to search."
-                            }
+                            },
+                        "mediator areas of practice": {
+                            "type": "array",
+                            "description": description,
+                            "enum": extract_list()
+                            },    
                         }
                     },
                 }
@@ -72,7 +84,9 @@ def getMetadata(message):
 
 def search(message, history):
     metadata = json.loads(getMetadata(message=message))
-    print(metadata)
+    if "mediator areas of practice" in metadata:
+        metadata['mediator areas of practice'] = {"$in":[metadata['mediator areas of practice']]}
+        {"$in":["documentary","action"]}
     tools = [
             {
                 "type": "function", 
@@ -108,6 +122,7 @@ def search(message, history):
     mediator_num = json.loads(number_str)['mediator']
 
     print(mediator_num)
+
     template = """"""
     prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are appropriated to human's message. You shouldn't write mediator's information again. You have to analyze the mediators at once. You have to only write the reason within 2 sentences. "
     
@@ -125,7 +140,7 @@ def search(message, history):
 
     memory = ConversationBufferMemory(memory_key="chat_history", input_key="human_input")
 
-    print(message)
+    # print(message)
     start_time = time.time()
 
     pc = Pinecone(api_key=pinecone_api_key)
@@ -177,7 +192,7 @@ def search(message, history):
     chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
             openai_api_key=openai_api_key)
 
-    # print(new_docs)
+    print(new_docs)
     chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
     start_time = time.time()
     output = chain({"input_documents": new_docs, "human_input": message}, return_only_outputs=False)
