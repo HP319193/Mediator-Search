@@ -1,7 +1,7 @@
 import csv, json
 
 def extract_list():
-    csvfile = "content/test.csv"
+    csvfile = "test.csv"
 
     header_to_extract = "mediator areas of practice"
 
