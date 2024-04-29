@@ -80,6 +80,7 @@ def getMetadata(message):
         tools=tools
     )
 
+    print("Message =>", response.choices[0])
     return response.choices[0].message.tool_calls[0].function.arguments
 
 def search(message, history):
@@ -107,7 +108,7 @@ def search(message, history):
                         "properties": {
                             "mediator": {
                                 "type": "number",
-                                "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators.",
+                                "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user's message don't have information about the number of mediators, you have to respond with 1.",
                                 "default": 1
                             }
                         },
