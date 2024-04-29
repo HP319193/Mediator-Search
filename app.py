@@ -84,9 +84,18 @@ def getMetadata(message):
 
 def search(message, history):
     metadata = json.loads(getMetadata(message=message))
-    if "mediator areas of practice" in metadata:
-        metadata['mediator areas of practice'] = {"$in":[metadata['mediator areas of practice']]}
-        {"$in":["documentary","action"]}
+    print(metadata)
+    try:
+        practice_data = metadata['mediator areas of practice']
+        del metadata['mediator areas of practice']
+    except:
+        practice_data = ""
+
+    
+    # if "mediator areas of practice" in metadata:
+    #     metadata['mediator areas of practice'] = {"$in":[metadata['mediator areas of practice']]}
+    
+    print("metadata =>", metadata)
     tools = [
             {
                 "type": "function", 
@@ -156,6 +165,7 @@ def search(message, history):
         include_metadata=True
     )
 
+    print("num of result =>", len(results['matches']))
     end_time = time.time()
 
     print("Search Time =>", end_time-start_time)
@@ -163,14 +173,14 @@ def search(message, history):
     new_docs = []
     new_data = []
     for result in results['matches']:
-        if result['score'] > 0.8:
-            print(result['score'])
-            data = {}
-            for metadata in metadata_list:      
-                data[metadata] = result['metadata'][metadata]
+        print(result['score'])
+        data = {}
+        for metadata in metadata_list:      
+            data[metadata] = result['metadata'][metadata]
+        
+        if practice_data in result['metadata']['mediator areas of practice']:
             new_data.append(data)
-        else:
-            print(result['score'])
+
     print(len(new_data))
     random.shuffle(new_data)
 
