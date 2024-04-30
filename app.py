@@ -193,33 +193,35 @@ def search(message, history):
         print(len(new_data))
         random.shuffle(new_data)
 
-        
-        for index, new_datum in enumerate(new_data):
-            if index < mediator_num:
-                answer += f"{index+1}\n"
-                content = ""
-                for metadata_index, metadata in enumerate(metadata_list):
-                    content += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
-                    answer += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
+        if len(new_data) != 0:
+            for index, new_datum in enumerate(new_data):
+                if index < mediator_num:
+                    answer += f"{index+1}\n"
+                    content = ""
+                    for metadata_index, metadata in enumerate(metadata_list):
+                        content += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
+                        answer += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
 
-                answer += "\n\n"
-                new_doc = Document(page_content=answer)
-                new_docs.append(new_doc)
-            else:
-                break
+                    answer += "\n\n"
+                    new_doc = Document(page_content=answer)
+                    new_docs.append(new_doc)
+                else:
+                    break
 
-        chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
-                openai_api_key=openai_api_key)
+            chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
+                    openai_api_key=openai_api_key)
 
-        print(new_docs)
-        chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
-        start_time = time.time()
-        output = chain({"input_documents": new_docs, "human_input": message}, return_only_outputs=False)
-        end_time = time.time()
+            print(new_docs)
+            chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
+            start_time = time.time()
+            output = chain({"input_documents": new_docs, "human_input": message}, return_only_outputs=False)
+            end_time = time.time()
 
-        print("Query Time =>", end_time-start_time)
-        
-        answer += f"Why appropriate: {output['output_text']}"
+            print("Query Time =>", end_time-start_time)
+            
+            answer += f"Why appropriate: {output['output_text']}"
+        else:
+            answer += "I wasn't able to find a mediator that matched your request."
     else:
         answer = data['data']
 
