@@ -44,7 +44,7 @@ def getMetadata(message):
             "type": "function", 
             "function": {
                 "name": "get_info",
-                "description": "Extract the information of mediator",
+                "description": "Extract the information of mediator.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -58,7 +58,7 @@ def getMetadata(message):
                             },
                         "mediator state": {
                             "type": "string",
-                            "description": "Extract mediator's state that user want to search."
+                            "description": "Extract mediator's state that user want to search. If both mediator city and mediator state are possible, please extract as mediator state."
                             },
                         "mediator areas of practice": {
                             "type": "array",
@@ -104,8 +104,14 @@ def search(message, history):
             del metadata['mediator areas of practice']
         except:
             practice_data = ""
-        
-        print("metadata =>", metadata)
+
+        if "mediator city" in metadata:
+            try:
+                del metadata['mediator state']
+                del metadata['mediator country']
+            except:
+                pass
+        print("metadata =>", metadata)        
         tools = [
                 {
                     "type": "function", 
@@ -194,6 +200,15 @@ def search(message, history):
         random.shuffle(new_data)
 
         if len(new_data) != 0:
+            if practice_data != "" and mediator_num == 1:
+                answer += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n"
+            elif practice_data != "" and mediator_num > 1:
+                answer += f"I have located mediators who specializes in {practice_data}.  Here are their details:\n"
+            elif practice_data == "" and mediator_num == 1:
+                answer += f"I have located a mediator.  Here are their details:\n"
+            elif practice_data == "" and mediator_num > 1:
+                answer += f"I have located mediators.  Here are their details:\n"
+
             for index, new_datum in enumerate(new_data):
                 if index < mediator_num:
                     answer += f"{index+1}\n"
