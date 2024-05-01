@@ -141,11 +141,11 @@ def search(message, history):
                     ],
                     tools=tools,
         )
-
-        number_str = response.choices[0].message.tool_calls[0].function.arguments
-        
-        mediator_num = json.loads(number_str)['mediator']
-
+        try:
+            number_str = response.choices[0].message.tool_calls[0].function.arguments
+            mediator_num = json.loads(number_str)['mediator']
+        except:
+            mediator_num = 1
         print(mediator_num)
 
         template = """"""
