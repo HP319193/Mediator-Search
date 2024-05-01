@@ -149,7 +149,7 @@ def search(message, history):
         print(mediator_num)
 
         template = """"""
-        prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are appropriated to human's message. You shouldn't write mediator's information again. You have to analyze the mediators at once. You have to only write the reason within 2 sentences. "
+        prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are appropriate to human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
         
         end = """Context: {context}
             Chat history: {chat_history}
