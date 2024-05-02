@@ -201,13 +201,13 @@ def search(message, history):
 
         if len(new_data) != 0:
             if practice_data != "" and mediator_num == 1:
-                answer += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n"
+                answer += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
             elif practice_data != "" and mediator_num > 1:
-                answer += f"I have located mediators who specializes in {practice_data}.  Here are their details:\n"
+                answer += f"I have located mediators who specializes in {practice_data}.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num == 1:
-                answer += f"I have located a mediator.  Here are their details:\n"
+                answer += f"I have located a mediator.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num > 1:
-                answer += f"I have located mediators.  Here are their details:\n"
+                answer += f"I have located mediators.  Here are their details:\n\n"
 
             for index, new_datum in enumerate(new_data):
                 if index < mediator_num:
