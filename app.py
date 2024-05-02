@@ -203,7 +203,7 @@ def search(message, history):
             if practice_data != "" and mediator_num == 1:
                 answer += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
             elif practice_data != "" and mediator_num > 1:
-                answer += f"I have located mediators who specializes in {practice_data}.  Here are their details:\n\n"
+                answer += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num == 1:
                 answer += f"I have located a mediator.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num > 1:
