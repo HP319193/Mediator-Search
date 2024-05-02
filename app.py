@@ -27,8 +27,8 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_index = os.getenv("INDEX")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
-metadata_list = ['fullname', 'mediator email', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state', 'mediator areas of practice']
-metadata_value = ['Name', "Email", "Profile", "Biography", "State", "practice"]
+metadata_list = ['fullname', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state']
+metadata_value = ['Name', "Profile", "Biography", "State"]
 
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 openai_client = OpenAI(api_key=openai_api_key)
@@ -211,11 +211,11 @@ def search(message, history):
 
             for index, new_datum in enumerate(new_data):
                 if index < mediator_num:
-                    answer += f"{index+1}\n"
+                    # answer += f"{index+1}\n"
                     content = ""
                     for metadata_index, metadata in enumerate(metadata_list):
-                        content += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
-                        answer += f"{metadata_value[metadata_index]}: {new_datum[metadata]} \n"
+                        content += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
+                        answer += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
 
                     answer += "\n\n"
                     new_doc = Document(page_content=answer)
