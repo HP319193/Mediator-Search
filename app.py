@@ -100,8 +100,13 @@ def search(message, history):
         metadata = json.loads(data['data'])
         print(metadata)
         try:
-            practice_data = metadata['mediator areas of practice']
-            del metadata['mediator areas of practice']
+            if 'mediator areas of practice' in metadata:
+                practice_data = metadata['mediator areas of practice']
+                del metadata['mediator areas of practice']
+            elif 'mediator practice field' in metadata:
+                practice_data = metadata['mediator practice field']
+                del metadata['mediator practice field']
+            
         except:
             practice_data = ""
 
@@ -149,8 +154,8 @@ def search(message, history):
         print(mediator_num)
 
         template = """"""
-        prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are appropriate to human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
-        
+        # prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are matched to human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
+        prompt = "You are a professional mediator information analyze. You have to analyze the follwing mediators based on human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
         end = """Context: {context}
             Chat history: {chat_history}
             Human: {human_input}
@@ -203,7 +208,7 @@ def search(message, history):
             if practice_data != "" and mediator_num == 1:
                 answer += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
             elif practice_data != "" and mediator_num > 1:
-                answer += f"I have located mediators who specializes in {practice_data}.  Here are their details:\n\n"
+                answer += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num == 1:
                 answer += f"I have located a mediator.  Here are their details:\n\n"
             elif practice_data == "" and mediator_num > 1:
