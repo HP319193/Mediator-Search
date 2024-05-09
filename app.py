@@ -97,7 +97,8 @@ class MediatorRetriever(BaseRetriever):
 
         if search_status == True:
             metadata = json.loads(data['data'])
-            print(metadata)
+            print("Metadata => ", metadata)
+
             try:
                 if 'mediator areas of practice' in metadata:
                     practice_data = metadata['mediator areas of practice']
@@ -115,123 +116,128 @@ class MediatorRetriever(BaseRetriever):
                     del metadata['mediator country']
                 except:
                     pass
+            
+            print("metadata =>", metadata) 
 
-            print("metadata =>", metadata)     
-
-            tools = [
-                    {
-                        "type": "function", 
-                        "function": {
-                            "name": "mediator_search",
-                            "description": "Extract how many mediators user want to search.",
-                            "parameters": {
-                                "type": "object",
-                                "properties": {
-                                    "mediator": {
-                                        "type": "number",
-                                        "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user's message don't have information about the number of mediators, you have to respond with 1.",
-                                        "default": 1
-                                    }
-                                },
-                                "required": ["mediator"]
+            if practice_data == "":
+                message += "Please let me know what the conflict is about so that I can better match you with a mediator"
+            elif not 'mediator country' in metadata and not 'mediator state' in metadata and not 'mediator_city' in metadata:
+                message += "Could you please tell me what state or city you're located in so that I can find mediators in your area?"
+            else:
+                tools = [
+                        {
+                            "type": "function", 
+                            "function": {
+                                "name": "mediator_search",
+                                "description": "Extract how many mediators user want to search.",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mediator": {
+                                            "type": "number",
+                                            "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user's message don't have information about the number of mediators, you have to respond with 1.",
+                                            "default": 1
+                                        }
+                                    },
+                                    "required": ["mediator"]
+                                }
                             }
                         }
-                    }
-                ]
-            
-            response = openai_client.chat.completions.create(
-                    model="gpt-4-1106-preview",
-                    messages=[
-                            {"role": "system", "content": "Please extract how many mediators users want to search."},
-                            {"role": "user", "content": query}
-                        ],
-                        tools=tools,
-            )
-            try:
-                number_str = response.choices[0].message.tool_calls[0].function.arguments
-                mediator_num = json.loads(number_str)['mediator']
-            except:
-                mediator_num = 1
-
-            print(mediator_num)
-
-            template = """"""
-            # prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are matched to human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
-            prompt = "You are a professional mediator information analyzer. You have to analyze the follwing mediators based on human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
-            end = """Context: {context}
-                Chat history: {chat_history}
-                Human: {human_input}
-                Your Response as Chatbot:"""
-            
-            template += prompt + end
-
-            prompt = PromptTemplate(
-                input_variables=["chat_history", "human_input", "context"], 
-                template=template
-            )
-            # print(message)
-
-            pc = Pinecone(api_key=pinecone_api_key)
-
-            embeddings = OpenAIEmbeddings(api_key=openai_api_key)
-            
-            index = pc.Index(pinecone_index)
-
-            results = index.query(
-                vector=embeddings.embed_query(query),
-                top_k=748,
-                filter=metadata,
-                include_metadata=True
-            )
-
-            print("num of result =>", len(results['matches']))
-            
-            new_data = []
-            for result in results['matches']:
-                data = {}
-                for metadata in metadata_list:      
-                    data[metadata] = result['metadata'][metadata]
+                    ]
                 
-                if practice_data in result['metadata']['mediator areas of practice']:
-                    new_data.append(data)
+                response = openai_client.chat.completions.create(
+                        model="gpt-4-1106-preview",
+                        messages=[
+                                {"role": "system", "content": "Please extract how many mediators users want to search."},
+                                {"role": "user", "content": query}
+                            ],
+                            tools=tools,
+                )
+                try:
+                    number_str = response.choices[0].message.tool_calls[0].function.arguments
+                    mediator_num = json.loads(number_str)['mediator']
+                except:
+                    mediator_num = 1
 
-            print(len(new_data))
-            random.shuffle(new_data)
+                print(mediator_num)
 
-            if len(new_data) != 0:
-                if practice_data != "" and mediator_num == 1:
-                    message += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
-                elif practice_data != "" and mediator_num > 1:
-                    message += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
-                elif practice_data == "" and mediator_num == 1:
-                    message += f"I have located a mediator.  Here are their details:\n\n"
-                elif practice_data == "" and mediator_num > 1:
-                    message += f"I have located mediators.  Here are their details:\n\n"
+                template = """"""
+                # prompt = "You are a professional mediator information analyzer. You have to write the reason why following mediators are matched to human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
+                prompt = "You are a professional mediator information analyzer. You have to analyze the follwing mediators based on human's message. You shouldn't write mediator's information again. You should't write the mediators in context are the excellent choice or ideal candidate. You have to analyze the mediators at once.  Please respond with no more than 300 characters. "
+                end = """Context: {context}
+                    Chat history: {chat_history}
+                    Human: {human_input}
+                    Your Response as Chatbot:"""
+                
+                template += prompt + end
 
-            for index, new_datum in enumerate(new_data):
-                if index < mediator_num:
-                    content = ""
+                prompt = PromptTemplate(
+                    input_variables=["chat_history", "human_input", "context"], 
+                    template=template
+                )
+                # print(message)
 
-                    for metadata_index, metadata in enumerate(metadata_list):
-                        content += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
-                        message += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
+                pc = Pinecone(api_key=pinecone_api_key)
 
-                    message += "\n\n"
-                    new_doc = Document(page_content=content)
-                    matching_documents.append(new_doc)
-                else:
-                    break
-            
-            chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
-                    openai_api_key=openai_api_key)
-            
-            memory = ConversationBufferMemory(memory_key="chat_history", input_key="human_input")
+                embeddings = OpenAIEmbeddings(api_key=openai_api_key)
+                
+                index = pc.Index(pinecone_index)
 
-            chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
+                results = index.query(
+                    vector=embeddings.embed_query(query),
+                    top_k=748,
+                    filter=metadata,
+                    include_metadata=True
+                )
 
-            output = chain({"input_documents": matching_documents, "human_input": query}, return_only_outputs=False)
-            
-            message += f"Why appropriate: {output['output_text']}"
+                print("num of result =>", len(results['matches']))
+                
+                new_data = []
+                for result in results['matches']:
+                    data = {}
+                    for metadata in metadata_list:      
+                        data[metadata] = result['metadata'][metadata]
+                    
+                    if practice_data in result['metadata']['mediator areas of practice']:
+                        new_data.append(data)
+
+                print(len(new_data))
+                random.shuffle(new_data)
+
+                if len(new_data) != 0:
+                    if practice_data != "" and mediator_num == 1:
+                        message += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
+                    elif practice_data != "" and mediator_num > 1:
+                        message += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
+                    elif practice_data == "" and mediator_num == 1:
+                        message += f"I have located a mediator.  Here are their details:\n\n"
+                    elif practice_data == "" and mediator_num > 1:
+                        message += f"I have located mediators.  Here are their details:\n\n"
+
+                for index, new_datum in enumerate(new_data):
+                    if index < mediator_num:
+                        content = ""
+
+                        for metadata_index, metadata in enumerate(metadata_list):
+                            content += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
+                            message += f"<b>{metadata_value[metadata_index]}</b>: {new_datum[metadata]} \n"
+
+                        message += "\n\n"
+                        new_doc = Document(page_content=content)
+                        matching_documents.append(new_doc)
+                    else:
+                        break
+                
+                chat_openai = ChatOpenAI(model='gpt-4-1106-preview', 
+                        openai_api_key=openai_api_key)
+                
+                memory = ConversationBufferMemory(memory_key="chat_history", input_key="human_input")
+
+                chain = load_qa_chain(chat_openai, chain_type="stuff",  prompt=prompt, memory=memory)
+
+                output = chain({"input_documents": matching_documents, "human_input": query}, return_only_outputs=False)
+                
+                message += f"Why appropriate: {output['output_text']}"
         else:
             message += data['data']
         
