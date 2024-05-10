@@ -1,5 +1,4 @@
 from typing import List
-
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
@@ -10,6 +9,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
+
 
 import os, json, random
 from dotenv import load_dotenv
@@ -99,6 +99,7 @@ class MediatorRetriever(BaseRetriever):
             metadata = json.loads(data['data'])
             print("Metadata => ", metadata)
 
+            practice_data = ""
             try:
                 if 'mediator areas of practice' in metadata:
                     practice_data = metadata['mediator areas of practice']
@@ -121,7 +122,7 @@ class MediatorRetriever(BaseRetriever):
 
             if practice_data == "":
                 message += "Please let me know what the conflict is about so that I can better match you with a mediator"
-            elif not 'mediator country' in metadata and not 'mediator state' in metadata and not 'mediator_city' in metadata:
+            elif not 'mediator country' in metadata and not 'mediator state' in metadata and not 'mediator city' in metadata:
                 message += "Could you please tell me what state or city you're located in so that I can find mediators in your area?"
             else:
                 tools = [
