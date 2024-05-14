@@ -10,11 +10,9 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
 
-
 import os, json, random
 from dotenv import load_dotenv
 import gradio as gr
-
 
 load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -176,7 +174,6 @@ class MediatorRetriever(BaseRetriever):
                     input_variables=["chat_history", "human_input", "context"], 
                     template=template
                 )
-                # print(message)
 
                 pc = Pinecone(api_key=pinecone_api_key)
 
@@ -238,7 +235,10 @@ class MediatorRetriever(BaseRetriever):
 
                 output = chain({"input_documents": matching_documents, "human_input": query}, return_only_outputs=False)
                 
-                message += f"Why appropriate: {output['output_text']}"
+                if len(new_data) != 0:
+                    message += f"Why appropriate: {output['output_text']}"
+                else:
+                    message += "I wasn't able to find a mediator that matched your request."
         else:
             message += data['data']
         
@@ -260,18 +260,19 @@ chat_retriever_chain = create_history_aware_retriever(
     llm, retriever, rephrase_prompt
 )
 
-chat_history = []
-
 def search(query, history):
-    data = chat_retriever_chain.invoke({"input": query, "chat_history": chat_history})
+    chat_history = []
+    for item in history:
+        chat_history.extend([HumanMessage(content=item[0]), item[1]])
 
-    chat_history.extend([HumanMessage(content=query), data['documents']])
+    data = chat_retriever_chain.invoke({"input": query, "chat_history": chat_history})
 
     return data['message']
 
 chatbot = gr.Chatbot(avatar_images=["user.png", "bot.jpg"], height=600)
+clear_but = gr.Button(value="Clear")
+demo = gr.ChatInterface(fn=search, title="Mediate.com Chatbot Prototype", multimodal=False, retry_btn=None, undo_btn=None, clear_btn=clear_but, chatbot=chatbot)
 
-demo = gr.ChatInterface(fn=search, title="Mediate.com Chatbot Prototype", multimodal=False, retry_btn=None, clear_btn=None, undo_btn=None, chatbot=chatbot)
 
 if __name__ == "__main__":
     demo.launch(debug=True)
