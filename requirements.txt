@@ -5,3 +5,5 @@ langchain-pinecone==0.0.3
 langchain-openai==0.0.8
 python-dotenv==1.0.0
 bs4==0.0.2
+langchain-core==0.1.52
+gradio==4.29.0

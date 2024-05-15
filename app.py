@@ -2,7 +2,7 @@ from typing import List
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from extract import extract_practice
+from extract import extract_practice, extract_city, extract_state
 from openai import OpenAI
 from pinecone import Pinecone
 from langchain_openai import OpenAIEmbeddings
@@ -45,11 +45,13 @@ class MediatorRetriever(BaseRetriever):
                                 },
                             "mediator city": {
                                 "type": "string",
-                                "description": "Extract mediator's city that user want to search."
+                                "description": "Extract mediator's city that user want to search.",
+                                "enum": extract_city() 
                                 },
                             "mediator state": {
                                 "type": "string",
-                                "description": "Extract mediator's state that user want to search. If both mediator city and mediator state are possible, please extract as mediator state."
+                                "description": "Extract mediator's state that user want to search. If both mediator city and mediator state are possible, please extract as mediator state.",
+                                "enum": extract_state()
                                 },
                             "mediator areas of practice": {
                                 "type": "array",
