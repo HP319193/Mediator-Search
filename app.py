@@ -272,7 +272,7 @@ def search(query, history):
     return data['message']
 
 chatbot = gr.Chatbot(avatar_images=["user.png", "bot.jpg"], height=600)
-clear_but = gr.Button(value="Clear")
+clear_but = gr.Button(value="Clear Chat")
 demo = gr.ChatInterface(fn=search, title="Mediate.com Chatbot Prototype", multimodal=False, retry_btn=None, undo_btn=None, clear_btn=clear_but, chatbot=chatbot)
 
 
