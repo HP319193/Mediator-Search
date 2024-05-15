@@ -2,7 +2,7 @@ from typing import List
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from extract import extract_list
+from extract import extract_practice
 from openai import OpenAI
 from pinecone import Pinecone
 from langchain_openai import OpenAIEmbeddings
@@ -21,7 +21,7 @@ pinecone_api_key = os.getenv("PINECONE_API_KEY")
 
 openai_client = OpenAI(api_key=openai_api_key)
 
-practice_list = ', '.join(extract_list())
+practice_list = ', '.join(extract_practice())
 
 description = "Extract mediator's practice field that user want to search. Available mediator practice fields are " + practice_list
 
@@ -54,7 +54,7 @@ class MediatorRetriever(BaseRetriever):
                             "mediator areas of practice": {
                                 "type": "array",
                                 "description": description,
-                                "enum": extract_list()
+                                "enum": extract_practice()
                                 },    
                             }
                         },
