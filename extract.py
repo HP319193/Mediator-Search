@@ -19,10 +19,10 @@ def extract_practice():
                     if not new_practice in values and not new_practice.isdigit():
                         values.append(new_practice)
 
-    jsonfile_path = "practice.json"
+    # jsonfile_path = "practice.json"
 
-    with open(jsonfile_path, 'w') as file:
-        json.dump(values, file, indent=4)
+    # with open(jsonfile_path, 'w') as file:
+    #     json.dump(values, file, indent=4)
 
     return values
 
@@ -41,11 +41,6 @@ def extract_state():
                 if not text in values:
                     values.append(text)
 
-    jsonfile_path = "state.json"
-
-    with open(jsonfile_path, 'w') as file:
-        json.dump(values, file, indent=4)
-
     return values
 
 def extract_city():
@@ -62,10 +57,5 @@ def extract_city():
                 
                 if not text in values:
                     values.append(text)
-
-    jsonfile_path = "city.json"
-
-    with open(jsonfile_path, 'w') as file:
-        json.dump(values, file, indent=4)
 
     return values 
