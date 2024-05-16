@@ -30,7 +30,7 @@ metadata_value = ['Name', "Profile", "Biography", "State"]
 
 city_data = extract_city()
 city_list = []
-for city, state in enumerate(city_data):
+for city, state in city_data.items():
     city_list.append(city)
 
 class MediatorRetriever(BaseRetriever):
@@ -142,7 +142,7 @@ class MediatorRetriever(BaseRetriever):
                                         "mediator": {
                                             "type": "number",
                                             "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user's message don't have information about the number of mediators, you have to respond with 1.",
-                                            "default": 1
+                                            "default": 3
                                         }
                                     },
                                     "required": ["mediator"]
@@ -159,11 +159,14 @@ class MediatorRetriever(BaseRetriever):
                             ],
                             tools=tools,
                 )
+
+                # print(response)
+
                 try:
                     number_str = response.choices[0].message.tool_calls[0].function.arguments
                     mediator_num = json.loads(number_str)['mediator']
                 except:
-                    mediator_num = 1
+                    mediator_num = 3
 
                 print(mediator_num)
 
@@ -182,6 +185,7 @@ class MediatorRetriever(BaseRetriever):
                     template=template
                 )
 
+                print(metadata)
                 new_data = search_mediator(metadata, practice_data)
 
                 ########## Pinecone connection

@@ -7,7 +7,7 @@ def extract_practice():
     header_to_extract = "mediator areas of practice"
 
     values = []
-    with open(csvfile, 'r') as file:
+    with open(csvfile, 'r', encoding='unicode_escape') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             if header_to_extract in row:
@@ -33,7 +33,7 @@ def extract_state():
     header_to_extract = "mediator state"
 
     values = []
-    with open(csvfile, 'r') as file:
+    with open(csvfile, 'r', encoding='unicode_escape') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             if header_to_extract in row:
@@ -50,7 +50,7 @@ def extract_city():
     header_to_extract = "mediator city"
     header_state = "mediator state"
     values = {}
-    with open(csvfile, 'r') as file:
+    with open(csvfile, 'r', encoding='unicode_escape') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             if header_to_extract in row:
@@ -64,7 +64,7 @@ def search_mediator(filter: dict, practice: str):
     print("filter =>", filter)
     csvfile = "updated.csv"
     mediator_data = []
-    with open(csvfile, 'r') as file:
+    with open(csvfile, 'r', encoding='unicode_escape') as file:
         csv_reader = csv.DictReader(file)
         
         for row in csv_reader:
