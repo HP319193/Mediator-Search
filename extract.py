@@ -1,7 +1,8 @@
 import csv, json
+metadata_list = ['fullname', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state']
 
 def extract_practice():
-    csvfile = "test.csv"
+    csvfile = "updated.csv"
 
     header_to_extract = "mediator areas of practice"
 
@@ -27,7 +28,7 @@ def extract_practice():
     return values
 
 def extract_state():
-    csvfile = "test.csv"
+    csvfile = "updated.csv"
 
     header_to_extract = "mediator state"
 
@@ -44,18 +45,42 @@ def extract_state():
     return values
 
 def extract_city():
-    csvfile = "test.csv"
+    csvfile = "updated.csv"
 
     header_to_extract = "mediator city"
-
-    values = []
+    header_state = "mediator state"
+    values = {}
     with open(csvfile, 'r') as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             if header_to_extract in row:
                 text = row[header_to_extract]
-                
                 if not text in values:
-                    values.append(text)
+                    values[text] = row[header_state]
 
     return values 
+
+def search_mediator(filter: dict, practice: str):
+    print("filter =>", filter)
+    csvfile = "updated.csv"
+    mediator_data = []
+    with open(csvfile, 'r') as file:
+        csv_reader = csv.DictReader(file)
+        
+        for row in csv_reader:
+            isMatch = True
+            for key, value in filter.items():
+                if row[key] != value:
+                    isMatch = False
+            
+            if not practice in row['mediator areas of practice']:
+                isMatch = False
+
+            if isMatch:
+                data = {}
+                for medadata in metadata_list:
+                    data[medadata] = row[medadata]
+
+                mediator_data.append(data)
+                
+    return mediator_data

@@ -2,7 +2,7 @@ from typing import List
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from extract import extract_practice, extract_city, extract_state
+from extract import extract_practice, extract_city, extract_state, search_mediator
 from openai import OpenAI
 from pinecone import Pinecone
 from langchain_openai import OpenAIEmbeddings
@@ -28,6 +28,11 @@ description = "Extract mediator's practice field that user want to search. Avail
 metadata_list = ['fullname', 'mediator profile on mediate.com', 'mediator Biography', 'mediator state']
 metadata_value = ['Name', "Profile", "Biography", "State"]
 
+city_data = extract_city()
+city_list = []
+for city, state in enumerate(city_data):
+    city_list.append(city)
+
 class MediatorRetriever(BaseRetriever):
     def getMetadata(self, message):
         tools = [
@@ -46,7 +51,7 @@ class MediatorRetriever(BaseRetriever):
                             "mediator city": {
                                 "type": "string",
                                 "description": "Extract mediator's city that user want to search.",
-                                "enum": extract_city() 
+                                "enum": city_list
                                 },
                             "mediator state": {
                                 "type": "string",
@@ -177,34 +182,51 @@ class MediatorRetriever(BaseRetriever):
                     template=template
                 )
 
-                pc = Pinecone(api_key=pinecone_api_key)
+                new_data = search_mediator(metadata, practice_data)
 
-                embeddings = OpenAIEmbeddings(api_key=openai_api_key)
+                ########## Pinecone connection
+                # pc = Pinecone(api_key=pinecone_api_key)
+
+                # embeddings = OpenAIEmbeddings(api_key=openai_api_key)
                 
-                index = pc.Index(pinecone_index)
+                # index = pc.Index(pinecone_index)
 
-                results = index.query(
-                    vector=embeddings.embed_query(query),
-                    top_k=748,
-                    filter=metadata,
-                    include_metadata=True
-                )
+                # results = index.query(
+                #     vector=embeddings.embed_query(query),
+                #     top_k=748,
+                #     filter=metadata,
+                #     include_metadata=True
+                # )
 
-                print("num of result =>", len(results['matches']))
+                # print("num of result =>", len(results['matches']))
                 
-                new_data = []
-                for result in results['matches']:
-                    data = {}
-                    for metadata in metadata_list:      
-                        data[metadata] = result['metadata'][metadata]
+                
+                # for result in results['matches']:
+                #     data = {}
+                #     for metadata in metadata_list:      
+                #         data[metadata] = result['metadata'][metadata]
                     
-                    if practice_data in result['metadata']['mediator areas of practice']:
-                        new_data.append(data)
+                #     if practice_data in result['metadata']['mediator areas of practice']:
+                #         new_data.append(data)
 
                 print(len(new_data))
+
+                noCity = False
+
+                if len(new_data) == 0 and "mediator city" in metadata:
+                    metadata['mediator state'] = city_data[metadata['mediator city']]
+                    del metadata['mediator city']
+
+                    new_data = search(metadata, practice_data)
+
+                    noCity = True
+
                 random.shuffle(new_data)
 
-                if len(new_data) != 0:
+                if noCity == True and len(new_data) != 0:
+                    message += "I could not find a mediator in your city, but here are results from your state."
+
+                if len(new_data) != 0 and noCity == False:
                     if practice_data != "" and mediator_num == 1:
                         message += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
                     elif practice_data != "" and mediator_num > 1:
@@ -272,7 +294,7 @@ def search(query, history):
     return data['message']
 
 chatbot = gr.Chatbot(avatar_images=["user.png", "bot.jpg"], height=600)
-clear_but = gr.Button(value="Clear")
+clear_but = gr.Button(value="Clear Chat")
 demo = gr.ChatInterface(fn=search, title="Mediate.com Chatbot Prototype", multimodal=False, retry_btn=None, undo_btn=None, clear_btn=clear_but, chatbot=chatbot)
 
 
