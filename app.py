@@ -29,6 +29,7 @@ metadata_list = ['fullname', 'mediator profile on mediate.com', 'mediator Biogra
 metadata_value = ['Name', "Profile", "Biography", "State"]
 
 city_data = extract_city()
+print(type(city_data))
 city_list = []
 for city, state in city_data.items():
     city_list.append(city)
@@ -78,7 +79,8 @@ class MediatorRetriever(BaseRetriever):
             tools=tools
         )
 
-        print("Message =>", response.choices[0])
+        # print("Message =>", response.choices[0])
+        print("Message Response =>", response)
 
         try:
             data = response.choices[0].message.tool_calls[0].function.arguments
@@ -216,6 +218,7 @@ class MediatorRetriever(BaseRetriever):
                 print(len(new_data))
 
                 noCity = False
+                oneCity = False
 
                 if len(new_data) == 0 and "mediator city" in metadata:
                     metadata['mediator state'] = city_data[metadata['mediator city']]
@@ -224,6 +227,25 @@ class MediatorRetriever(BaseRetriever):
                     new_data = search(metadata, practice_data)
 
                     noCity = True
+
+                elif len(new_data) == 1 and "mediator city" in metadata and mediator_num > 1:
+                    oneCity = True
+                    content = ""
+                    message += f"I have found one mediator in {metadata['mediator city']}.\n\n" 
+
+                    for metadata_index, metadatum in enumerate(metadata_list):
+                        content += f"<b>{metadata_value[metadata_index]}</b>: {new_data[0][metadatum]} \n"
+                        message += f"<b>{metadata_value[metadata_index]}</b>: {new_data[0][metadatum]} \n"
+
+                    message += "\n\n"
+
+                    new_doc = Document(page_content=content)
+                    matching_documents.append(new_doc)
+
+                    metadata['mediator state'] = city_data[metadata['mediator city']]
+                    del metadata['mediator city']
+
+                    new_data = search_mediator(metadata, practice_data)
 
                 random.shuffle(new_data)
 
@@ -234,7 +256,10 @@ class MediatorRetriever(BaseRetriever):
                     if practice_data != "" and mediator_num == 1:
                         message += f"I have located a mediator who specializes in {practice_data}.  Here are their details:\n\n"
                     elif practice_data != "" and mediator_num > 1:
-                        message += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
+                        if oneCity == True:
+                            message += f"I have located mediators who specialize in {practice_data} in your state.  Here are their details:\n\n"
+                        else:
+                            message += f"I have located mediators who specialize in {practice_data}.  Here are their details:\n\n"
                     elif practice_data == "" and mediator_num == 1:
                         message += f"I have located a mediator.  Here are their details:\n\n"
                     elif practice_data == "" and mediator_num > 1:
@@ -290,6 +315,7 @@ chat_retriever_chain = create_history_aware_retriever(
 
 def search(query, history):
     chat_history = []
+    print("history => ", history)
     for item in history:
         chat_history.extend([HumanMessage(content=item[0]), item[1]])
 
