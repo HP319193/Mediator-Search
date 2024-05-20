@@ -80,7 +80,7 @@ class MediatorRetriever(BaseRetriever):
         )
 
         # print("Message =>", response.choices[0])
-        print("Message Response =>", response)
+        # print("Message Response =>", response)
 
         try:
             data = response.choices[0].message.tool_calls[0].function.arguments
@@ -128,7 +128,7 @@ class MediatorRetriever(BaseRetriever):
             print("metadata =>", metadata) 
 
             if practice_data == "":
-                message += "Please let me know what the conflict is about so that I can better match you with a mediator"
+                message += "Please let me know what the conflict is about so that I can better match you with a mediator."
             elif not 'mediator country' in metadata and not 'mediator state' in metadata and not 'mediator city' in metadata:
                 message += "Could you please tell me what state or city you're located in so that I can find mediators in your area?"
             else:
@@ -143,7 +143,7 @@ class MediatorRetriever(BaseRetriever):
                                     "properties": {
                                         "mediator": {
                                             "type": "number",
-                                            "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user want to search several mediators, it means user want to search 3 mediators. You have to consider carefully it is plural or singular. ",
+                                            "description": "The number of mediators that user want to search. If user ask a list of mediators, it means user want to search 3 mediators. If user want to search several mediators, it means user want to search 3 mediators",
                                             "default": 3
                                         }
                                     },
@@ -162,7 +162,7 @@ class MediatorRetriever(BaseRetriever):
                             tools=tools,
                 )
 
-                # print(response)
+                print(response)
 
                 try:
                     number_str = response.choices[0].message.tool_calls[0].function.arguments
@@ -315,6 +315,11 @@ chat_retriever_chain = create_history_aware_retriever(
 
 def search(query, history):
     chat_history = []
+    
+    for his in history:
+        if his[1] == "Please let me know what the conflict is about so that I can better match you with a mediator.":
+            his[1] = "Please let me know what the conflict is about so that I can better match you."
+
     print("history => ", history)
     for item in history:
         chat_history.extend([HumanMessage(content=item[0]), item[1]])
